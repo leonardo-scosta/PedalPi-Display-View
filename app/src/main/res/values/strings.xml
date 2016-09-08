@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">PedalPi</string>
+
+
+    // parametro 1 - plugin 1
+    <string-array name="Parâmetro_1">
+        <item>Opcao1</item>
+        <item>Opcao2</item>
+        <item>Opcao3</item>
+        <item>Opcao4</item>
+        <item>Opcao5</item>
+        <item>Opcao6</item>
+    </string-array>
+    // parametro 1 - plugin 1
+</resources>
