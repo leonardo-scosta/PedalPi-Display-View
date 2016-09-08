@@ -8,6 +8,9 @@ import android.widget.Spinner;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.pedalpi.pedalpi.componente.RotaryKnob;
+
+
 public class Main3Activity extends AppCompatActivity {
 
     Spinner parametro1;
@@ -22,6 +25,12 @@ public class Main3Activity extends AppCompatActivity {
         parametro1 = (Spinner) findViewById(R.id.spinner);
         ArrayAdapter adapter = ArrayAdapter.createFromResource(this,R.array.Parâmetro_1,android.R.layout.simple_spinner_dropdown_item);
         parametro1.setAdapter(adapter);
+
+
+        RotaryKnob knob = (RotaryKnob) findViewById(R.id.knob);
+        knob.setImageResource(R.drawable.botao);
+
+
         //parametro 1 - plugin 1
 
         //parametro 2 - plugin 1

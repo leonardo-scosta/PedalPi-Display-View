@@ -10,19 +10,30 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.pedalpi.pedalpi.Main3Activity">
 
-
-        <LinearLayout
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+    <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:orientation="vertical">
-            <no.kapelrud.RotaryKnob
+            <!--<no.kapelrud.RotaryKnob
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:minValue="0"
                 app:maxValue="1"
                 app:value="50"
                 app:valueColor="@color/red"
-                app:numSteps="100" />
+                app:numSteps="10" />-->
+            <com.pedalpi.pedalpi.componente.RotaryKnob
+                android:id="@+id/knob"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+        <!--<ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scr="@drawable/my_btn_toggle"/>-->
 
             <Spinner
                 android:layout_width="fill_parent"
@@ -45,13 +56,9 @@
                 android:background="@drawable/my_btn_toggle"
                 android:checked="false"
                 android:textSize="@dimen/abc_action_bar_default_height_material" />
+
                 <!--android:background="@drawable/my_btn_toggle"-->
         </LinearLayout>
-    <!--
-    <ScrollView
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
     </ScrollView>
-    -->
 
 </RelativeLayout>
