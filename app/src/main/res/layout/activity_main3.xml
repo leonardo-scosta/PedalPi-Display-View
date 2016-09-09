@@ -12,29 +12,14 @@
 
     <ScrollView
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
+        android:layout_height="fill_parent"
+        android:layout_alignParentTop="false"
+        android:layout_alignParentLeft="false"
+        android:layout_alignParentRight="false">
     <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:orientation="vertical">
-            <!--<no.kapelrud.RotaryKnob
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:minValue="0"
-                app:maxValue="1"
-                app:value="50"
-                app:valueColor="@color/red"
-                app:numSteps="10" />-->
-            <com.pedalpi.pedalpi.componente.RotaryKnob
-                android:id="@+id/knob"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                />
-        <!--<ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:scr="@drawable/my_btn_toggle"/>-->
-
             <Spinner
                 android:layout_width="fill_parent"
                 android:layout_height="165dp"
@@ -56,9 +41,40 @@
                 android:background="@drawable/my_btn_toggle"
                 android:checked="false"
                 android:textSize="@dimen/abc_action_bar_default_height_material" />
-
                 <!--android:background="@drawable/my_btn_toggle"-->
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="100dp"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="Parametro 3 - tipo"
+                android:gravity="center"
+                android:id="@+id/textView"
+                android:background="@color/green"
+                android:layout_gravity="center_horizontal"
+                android:textSize="40dp"/>
+
+            <SeekBar
+                android:layout_width="fill_parent"
+                android:layout_height="20dp"
+                android:id="@+id/seekBar"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:background="@color/green"
+
+                />
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="45dp"
+                android:text="0/100"
+                android:id="@+id/textView2"
+                android:gravity="center"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:background="@color/green"/>
+
         </LinearLayout>
     </ScrollView>
-
 </RelativeLayout>

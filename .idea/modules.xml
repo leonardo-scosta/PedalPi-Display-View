@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/PedalPi.iml" filepath="$PROJECT_DIR$/PedalPi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/PedalPi-Display-View.iml" filepath="$PROJECT_DIR$/PedalPi-Display-View.iml" />
       <module fileurl="file://$PROJECT_DIR$/RotaryKnobLibrary-0.1.0/RotaryKnobLibrary-0.1.0.iml" filepath="$PROJECT_DIR$/RotaryKnobLibrary-0.1.0/RotaryKnobLibrary-0.1.0.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
