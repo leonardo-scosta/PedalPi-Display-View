@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.pedalpi.pedalpi.Main3Activity">
+    tools:context=".ParamsActivity">
 
     <ScrollView
         android:layout_width="fill_parent"
@@ -16,10 +16,22 @@
         android:layout_alignParentTop="false"
         android:layout_alignParentLeft="false"
         android:layout_alignParentRight="false">
-    <LinearLayout
+        <LinearLayout
+            android:id="@+id/paramsContainer"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/effectName"
+                android:layout_width="fill_parent"
+                android:layout_height="100dp"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="EffectName"
+                android:gravity="center"
+                android:layout_gravity="center_horizontal"
+                android:textSize="40dp"/>
+
             <Spinner
                 android:layout_width="fill_parent"
                 android:layout_height="165dp"
@@ -41,39 +53,7 @@
                 android:background="@drawable/my_btn_toggle"
                 android:checked="false"
                 android:textSize="@dimen/abc_action_bar_default_height_material" />
-                <!--android:background="@drawable/my_btn_toggle"-->
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="100dp"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="Parametro 3 - tipo"
-                android:gravity="center"
-                android:id="@+id/textView"
-                android:background="@color/green"
-                android:layout_gravity="center_horizontal"
-                android:textSize="40dp"/>
 
-            <SeekBar
-                android:layout_width="fill_parent"
-                android:layout_height="20dp"
-                android:id="@+id/seekBar"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:background="@color/green"
-
-                />
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="45dp"
-                android:text="0/100"
-                android:id="@+id/textView2"
-                android:gravity="center"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:background="@color/green"/>
 
         </LinearLayout>
     </ScrollView>
