@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -98,25 +100,28 @@ public class ParamsActivity extends AppCompatActivity {
         SeekBar seekBar = new SeekBar(getApplicationContext());
         seekBar.setBackgroundColor(Color.rgb(138,43,226));
 
-        viewValue.setText(seekBar.getProgress() + "/" +seekBar.getMax());
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
-            int value;
+        final float valueMin =  (float) parameter.getMinimum();
+        final float valueMax =  (float) parameter.getMaximum();
+        final float valueDeault = (float) parameter.getValueDefault();
 
+        viewValue.setText(valueDeault + "/" + valueMax);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+            double currentValue;
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                value = progress;
-                viewValue.setText(progress + "/" +seekBar.getMax());
-
+                currentValue = functionConvert(progress,valueMax);
+                viewValue.setText(currentValue + "/" +valueMax);
+                Log.i("BOTAO", "currentValue selected: " + currentValue);
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                viewValue.setText(valueDeault + "/" + valueMax);
+            }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                double range = parameter.getMaximum() - parameter.getMinimum();
-
-                viewValue.setText(value + "/" +seekBar.getMax());
+                viewValue.setText(currentValue + "/" +valueMax);
             }
         });
 
@@ -130,6 +135,11 @@ public class ParamsActivity extends AppCompatActivity {
         container.addView(viewValue, layoutParams);
 
         return seekBar;
+    }
+
+    public double functionConvert(int progress, float valueMax){
+        return (double) (progress* valueMax)/100;
+
     }
 
     @Override
