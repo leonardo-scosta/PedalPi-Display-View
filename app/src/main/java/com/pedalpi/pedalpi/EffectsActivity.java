@@ -10,10 +10,13 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.pedalpi.pedalpi.communication.Message;
+import com.pedalpi.pedalpi.communication.ProtocolType;
+import com.pedalpi.pedalpi.communication.Server;
 import com.pedalpi.pedalpi.model.Effect;
 import com.pedalpi.pedalpi.model.Patch;
 
-public class EffectsActivity extends AppCompatActivity {
+public class EffectsActivity extends AppCompatActivity implements Server.OnMessageListener {
 
     public static final String EFFECT_INDEX = "EFFECT_INDEX";
     private Patch patch;
@@ -27,6 +30,8 @@ public class EffectsActivity extends AppCompatActivity {
 
         LinearLayout container = (LinearLayout) findViewById(R.id.container);
         createEffectsButtons(patch, container);
+
+        Server.getInstance().setListener(this);
     }
 
     private void createEffectsButtons(Patch patch, LinearLayout container) {
@@ -88,5 +93,14 @@ public class EffectsActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         this.patch = (Patch) data.getExtras().getSerializable(PatchActivity.PATCH);
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onMessage(Message message) {
+        Log.i("MESSAGE", message.getType().toString());
+        if (message.getType() == ProtocolType.PATCH) {
+            this.patch = new Patch(message.getContent());
+            onBackPressed();
+        }
     }
 }

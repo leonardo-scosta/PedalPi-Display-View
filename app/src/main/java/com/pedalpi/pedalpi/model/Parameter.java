@@ -42,10 +42,12 @@ public class Parameter implements Serializable {
     private Double prepareDoubleValue(JSONObject data, String key) {
         try {
             Object value = data.get(key);
-            if (value instanceof Integer) {
+            if (value instanceof Integer)
                 return new Double((Integer) value);
-            } else if (value instanceof Long)
+            else if (value instanceof Long)
                 return new Double((Long) value);
+            else if (value instanceof String)
+                return Double.parseDouble((String) value);
             else
                 return (Double) value;
         } catch (JSONException e) {

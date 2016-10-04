@@ -1,4 +1,4 @@
-package com.pedalpi.pedalpi.comunication;
+package com.pedalpi.pedalpi.communication;
 
 import org.json.JSONObject;
 
