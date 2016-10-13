@@ -4,12 +4,14 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.InputType;
+import android.support.v7.view.ContextThemeWrapper;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -52,12 +54,23 @@ public class ParamsActivity extends AppCompatActivity {
     }
 
     private void gerenateParameter(LinearLayout container, Parameter parameter) {
-        if (parameter.isCombobox())
-            createSpinner(container, parameter);
+        LinearLayout linearLayout = new LinearLayout(new ContextThemeWrapper(container.getContext(), LinearLayout.HORIZONTAL));
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM);
+        params.setMargins(0, 20, 0, 0);
+
+        linearLayout.setLayoutParams(params);
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+
+        if (parameter.isgit add.
+                Combobox())
+            createSpinner(linearLayout, parameter);
         else if (parameter.isToggle())
-            createButton(container, parameter); //createToggle();
+            createButton(linearLayout, parameter); //createToggle();
         else
-            createSeekbar(container, parameter);
+            createSeekbar(linearLayout, parameter);
+
+        container.addView(linearLayout);
     }
 
     private View createButton(LinearLayout container, Parameter parameter) {
@@ -85,43 +98,54 @@ public class ParamsActivity extends AppCompatActivity {
     }
 
     public View createSeekbar(LinearLayout container, final Parameter parameter) {
-
         final TextView viewName = new TextView(getApplicationContext());
         viewName.setText(parameter.getName());
         viewName.setBackgroundColor(Color.rgb(138,43,226));
-        viewName.setTextAppearance(getApplicationContext(), R.style.Parameters);
+        viewName.setTextAppearance(getApplicationContext(), R.style.ParametersName);
         viewName.setGravity(Gravity.CENTER);
 
-        final TextView viewValue = new TextView(getApplicationContext());
-        viewValue.setBackgroundColor(Color.rgb(138,43,226));
-        viewValue.setTextAppearance(getApplicationContext(), R.style.Parameters);
-        viewValue.setGravity(Gravity.CENTER);
+        final TextView viewValueCenter = new TextView(getApplicationContext());
+        viewValueCenter.setBackgroundColor(Color.rgb(138,43,226));
+        viewValueCenter.setTextAppearance(getApplicationContext(), R.style.ParametersPercent);
+        viewValueCenter.setGravity(Gravity.CENTER);
+
+        final float valueMin = (float) parameter.getMinimum();
+        final float valueMax = (float) parameter.getMaximum();
+        final float valueDefault = (float) parameter.getValueDefault();
 
         SeekBar seekBar = new SeekBar(getApplicationContext());
         seekBar.setBackgroundColor(Color.rgb(138,43,226));
+        seekBar.setProgress(calculePercentByRange(valueDefault, valueMin, valueMax));
 
-        final float valueMin =  (float) parameter.getMinimum();
-        final float valueMax =  (float) parameter.getMaximum();
-        final float valueDeault = (float) parameter.getValueDefault();
+        int percentDefault = calculePercentByRange(valueDefault, valueMin, valueMax);
+        viewValueCenter.setText(percentDefault+"%");
 
-        viewValue.setText(valueDeault + "/" + valueMax);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
             double currentValue;
+            int percent;
+
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                currentValue = functionConvert(progress,valueMax);
-                viewValue.setText(currentValue + "/" +valueMax);
-                Log.i("BOTAO", "currentValue selected: " + currentValue);
+                currentValue = functionConvertSeekBar(progress, valueMax, valueMin);
+                updateValues();
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                viewValue.setText(valueDeault + "/" + valueMax);
+                updateValues();
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                viewValue.setText(currentValue + "/" +valueMax);
+                updateValues();
+            }
+
+            private void updateValues() {
+                percent = calculePercentByRange(currentValue, valueMin, valueMax);
+                viewValueCenter.setText(percent+"%");
+
+                parameter.setValue(currentValue);
+                updateToServer(parameter);
             }
         });
 
@@ -131,15 +155,22 @@ public class ParamsActivity extends AppCompatActivity {
         );
 
         container.addView(viewName, layoutParams);
+        container.addView(viewValueCenter, layoutParams);
         container.addView(seekBar, layoutParams);
-        container.addView(viewValue, layoutParams);
 
         return seekBar;
     }
 
-    public double functionConvert(int progress, float valueMax){
-        return (double) (progress* valueMax)/100;
+    private void updateToServer(Parameter parameter) {
+        Log.i("parametro", parameter.getName() + " " + String.valueOf(parameter.getValue()));
+    }
 
+    public double functionConvertSeekBar(int progress, float valueMax,float valueMin){
+        return (progress*valueMax + (100-progress) * valueMin)/100.0;
+    }
+
+    public int calculePercentByRange(double currentValue, double valueMin, double valueMax){
+        return (int) (((currentValue - valueMin)*100/(valueMax-valueMin)));
     }
 
     @Override

@@ -16,7 +16,7 @@ public class Parameter implements Serializable {
     private final String name;
     private final List<String> properties;
 
-    private final double value;
+    private double value;
 
     private final double minimum;
     private final double maximum;
@@ -120,6 +120,10 @@ public class Parameter implements Serializable {
         return value;
     }
 
+    public void setValue(double value) {
+        this.value = value;
+    }
+
     public double getMaximum() {
         return maximum;
     }
@@ -129,4 +133,5 @@ public class Parameter implements Serializable {
     }
 
     public double getValueDefault(){return valueDefault;}
+
 }
