@@ -9,24 +9,27 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.pedalpi.pedalpi.communication.Message;
+import com.pedalpi.pedalpi.communication.ProtocolType;
+import com.pedalpi.pedalpi.communication.Server;
 import com.pedalpi.pedalpi.model.Effect;
 import com.pedalpi.pedalpi.model.Parameter;
 import com.pedalpi.pedalpi.model.Patch;
 
 
-public class ParamsActivity extends AppCompatActivity {
+public class ParamsActivity extends AppCompatActivity implements Server.OnMessageListener{
 
     private Patch patch;
     private Effect effect;
+    private boolean messageReceived = false;
+    public static final String PARAMETER = "PARAMETER";
 
     Spinner parametro1;
     ToggleButton toggleButton1;
@@ -46,6 +49,9 @@ public class ParamsActivity extends AppCompatActivity {
 
         for (Parameter parameter : this.effect.getParameters())
             gerenateParameter(container, parameter);
+
+
+        Server.getInstance().setListener(this);
     }
 
     private void setEffectName(int index, Effect effect) {
@@ -62,8 +68,7 @@ public class ParamsActivity extends AppCompatActivity {
         linearLayout.setLayoutParams(params);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
 
-        if (parameter.isgit add.
-                Combobox())
+        if (parameter.isCombobox())
             createSpinner(linearLayout, parameter);
         else if (parameter.isToggle())
             createButton(linearLayout, parameter); //createToggle();
@@ -111,13 +116,13 @@ public class ParamsActivity extends AppCompatActivity {
 
         final float valueMin = (float) parameter.getMinimum();
         final float valueMax = (float) parameter.getMaximum();
-        final float valueDefault = (float) parameter.getValueDefault();
+        final float value = (float) parameter.getValue();
 
         SeekBar seekBar = new SeekBar(getApplicationContext());
         seekBar.setBackgroundColor(Color.rgb(138,43,226));
-        seekBar.setProgress(calculePercentByRange(valueDefault, valueMin, valueMax));
+        seekBar.setProgress(calculePercentByRange(value, valueMin, valueMax));
 
-        int percentDefault = calculePercentByRange(valueDefault, valueMin, valueMax);
+        int percentDefault = calculePercentByRange(value, valueMin, valueMax);
         viewValueCenter.setText(percentDefault+"%");
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
@@ -126,7 +131,7 @@ public class ParamsActivity extends AppCompatActivity {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                currentValue = functionConvertSeekBar(progress, valueMax, valueMin);
+                currentValue = calculeSeekbarToPercent(progress, valueMax, valueMin);
                 updateValues();
             }
 
@@ -162,10 +167,13 @@ public class ParamsActivity extends AppCompatActivity {
     }
 
     private void updateToServer(Parameter parameter) {
+
+        Log.i("effect", "" + effect.getIndex());
+        Log.i("param", "" + parameter.getIndex());
         Log.i("parametro", parameter.getName() + " " + String.valueOf(parameter.getValue()));
     }
 
-    public double functionConvertSeekBar(int progress, float valueMax,float valueMin){
+    public double calculeSeekbarToPercent(int progress, float valueMax, float valueMin){
         return (progress*valueMax + (100-progress) * valueMin)/100.0;
     }
 
@@ -174,11 +182,35 @@ public class ParamsActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        this.patch = (Patch) data.getExtras().getSerializable(PatchActivity.PATCH);
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
     public void onBackPressed() {
         Intent intent = new Intent();
         intent.putExtra(PatchActivity.PATCH, this.patch);
+        intent.putExtra(PatchActivity.SETTED_CURRENT_PATCH, this.messageReceived);
+        //updateToServer(this.parameter);
+
+        messageReceived = false;
 
         setResult(0, intent);
         finish();
+    }
+
+    @Override
+    public void onMessage(Message message) {
+        Log.i("MESSAGE", message.getType().toString());
+        if (message.getType() == ProtocolType.PATCH) {
+            this.patch = new Patch(message.getContent());
+            messageReceived = true;
+            onBackPressed();
+        }else if(message.getType() == ProtocolType.EFFECT){
+
+        }else if(message.getType() == ProtocolType.PARAM){
+
+        }
     }
 }

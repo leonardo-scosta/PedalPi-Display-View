@@ -16,10 +16,18 @@ import com.pedalpi.pedalpi.communication.Server;
 import com.pedalpi.pedalpi.model.Effect;
 import com.pedalpi.pedalpi.model.Patch;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class EffectsActivity extends AppCompatActivity implements Server.OnMessageListener {
 
     public static final String EFFECT_INDEX = "EFFECT_INDEX";
     private Patch patch;
+    private List<Button> buttons;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,22 +37,25 @@ public class EffectsActivity extends AppCompatActivity implements Server.OnMessa
         this.patch = (Patch) getIntent().getSerializableExtra(PatchActivity.PATCH);
 
         LinearLayout container = (LinearLayout) findViewById(R.id.container);
-        createEffectsButtons(patch, container);
+        this.buttons = createEffectsButtons(patch, container);
 
         Server.getInstance().setListener(this);
     }
 
-    private void createEffectsButtons(Patch patch, LinearLayout container) {
+    private List<Button> createEffectsButtons(Patch patch, LinearLayout container) {
+         List<Button> buttons = new ArrayList<Button>();
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             160 * 2//LinearLayout.LayoutParams.WRAP_CONTENT
         );
 
-        for (final Effect effect : patch.getEffects())
-            createEffectButton(effect, container, layoutParams);
+        for (final Effect effect : patch.getEffects()) {
+            buttons.add(createEffectButton(effect, container, layoutParams));
+        }
+        return buttons;
     }
 
-    private void createEffectButton(final Effect effect, LinearLayout container, LinearLayout.LayoutParams layoutParams) {
+    private Button createEffectButton(final Effect effect, LinearLayout container, LinearLayout.LayoutParams layoutParams) {
         final Button button = new Button(this);
         button.setTextAppearance(getApplicationContext(), R.style.Effect);
 
@@ -53,7 +64,11 @@ public class EffectsActivity extends AppCompatActivity implements Server.OnMessa
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleStatusEffect(effect, button);
+                try {
+                    toggleStatusEffect(effect, button);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         });
         button.setOnLongClickListener(new View.OnLongClickListener() {
@@ -64,13 +79,28 @@ public class EffectsActivity extends AppCompatActivity implements Server.OnMessa
             }
         });
         container.addView(button, layoutParams);
+        return button;
     }
 
-    private void toggleStatusEffect(Effect effect, Button button) {
+    private void toggleStatusEffect(final Effect effect, final Button button) throws JSONException {
         Log.i("BOTAO", "Effect selected: " + effect);
         effect.toggleStatus();
-        button.setBackgroundColor(effect.isActive() ? Color.rgb(60,179,113) : Color.rgb(178,34,34));
-        Toast.makeText(getApplicationContext(), "efeito " + effect + " :", Toast.LENGTH_SHORT).show();
+        runOnUiThread(new Runnable() {
+                          @Override
+                          public void run() {
+                              button.setBackgroundColor(effect.isActive() ? Color.rgb(60,179,113) : Color.rgb(178,34,34));
+                              Toast.makeText(getApplicationContext(), "efeito " + effect , Toast.LENGTH_SHORT).show();
+                          }
+                      });
+        updateEffectStatusToServer(effect);
+    }
+
+
+    private void updateEffectStatusToServer(Effect effect) throws JSONException {
+        JSONObject indexNumber = new JSONObject();
+        indexNumber.put("index",effect.getIndex());
+
+        Server.getInstance().send(new Message(ProtocolType.EFFECT, indexNumber));
     }
 
     private void openScreenParamsList(Effect effect) {
@@ -91,16 +121,32 @@ public class EffectsActivity extends AppCompatActivity implements Server.OnMessa
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Server.getInstance().setListener(this);
+
         this.patch = (Patch) data.getExtras().getSerializable(PatchActivity.PATCH);
+        boolean settedCurrentPatch = data.getBooleanExtra(PatchActivity.SETTED_CURRENT_PATCH, false);
+
+        if (settedCurrentPatch)
+            onBackPressed();
+
         super.onActivityResult(requestCode, resultCode, data);
+
     }
 
     @Override
-    public void onMessage(Message message) {
+    public void onMessage(Message message) throws JSONException {
         Log.i("MESSAGE", message.getType().toString());
         if (message.getType() == ProtocolType.PATCH) {
             this.patch = new Patch(message.getContent());
             onBackPressed();
+        }else if(message.getType() == ProtocolType.EFFECT){
+            Log.i("effect", "" + message.getContent().getInt("index"));
+            int indexEffect = message.getContent().getInt("index");
+            toggleStatusEffect(this.patch.getEffects().get(indexEffect),buttons.get(indexEffect));
+        }else if(message.getType() == ProtocolType.PARAM){
+
         }
     }
+
+
 }

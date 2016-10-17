@@ -134,4 +134,7 @@ public class Parameter implements Serializable {
 
     public double getValueDefault(){return valueDefault;}
 
+    public int getIndex() {
+        return index;
+    }
 }

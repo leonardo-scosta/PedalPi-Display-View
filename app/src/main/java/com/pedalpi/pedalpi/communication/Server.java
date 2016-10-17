@@ -1,5 +1,7 @@
 package com.pedalpi.pedalpi.communication;
 
+import org.json.JSONException;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.LinkedList;
@@ -7,7 +9,7 @@ import java.util.List;
 
 public class Server {
     public interface OnMessageListener {
-        void onMessage(Message message);
+        void onMessage(Message message) throws JSONException;
     }
 
     private static Server instance;

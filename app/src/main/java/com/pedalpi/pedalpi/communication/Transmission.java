@@ -1,5 +1,7 @@
 package com.pedalpi.pedalpi.communication;
 
+import org.json.JSONException;
+
 import java.io.IOException;
 
 class Transmission implements Runnable {
@@ -18,7 +20,11 @@ class Transmission implements Runnable {
         while (status) {
             Message message = getMessage();
             if (message != null)
-                this.server.getListener().onMessage(message);
+                try {
+                    this.server.getListener().onMessage(message);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
         }
     }
 

@@ -28,7 +28,7 @@ public class Client {
     }
 
     public void send(Message message) {
-        out.print(message.toString());
+        out.print(message.toString()+"\n");
     }
 
     public String getStreamLine() throws IOException {

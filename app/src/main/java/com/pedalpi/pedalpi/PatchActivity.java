@@ -14,12 +14,14 @@ import com.pedalpi.pedalpi.communication.Server;
 import com.pedalpi.pedalpi.model.Patch;
 import com.pedalpi.pedalpi.util.JsonUtil;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 
 public class PatchActivity extends AppCompatActivity implements Server.OnMessageListener {
 
     public static final String PATCH = "PATCH";
+    public static final String SETTED_CURRENT_PATCH = "SETTED_CURRENT_PATCH";
     private Patch patch;
 
     @Override
@@ -29,10 +31,6 @@ public class PatchActivity extends AppCompatActivity implements Server.OnMessage
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
-
-        //JSONObject json = readJson("json/teste.json");
-        //this.patch = new Patch(json);
-        //updateScreen(patch);
 
         Server.getInstance().setListener(this);
     }
@@ -58,11 +56,17 @@ public class PatchActivity extends AppCompatActivity implements Server.OnMessage
     }
 
     @Override
-    public void onMessage(Message message) {
+    public void onMessage(Message message) throws JSONException {
         Log.i("MESSAGE", message.getType().toString());
         if (message.getType() == ProtocolType.PATCH) {
             this.patch = new Patch(message.getContent());
             updateScreen(patch);
+        }else if(message.getType() == ProtocolType.EFFECT){
+            int indexEffect = message.getContent().getInt("index");
+            this.patch.getEffects().get(indexEffect).toggleStatus();
+        }else if(message.getType() == ProtocolType.PARAM){
+            int indexParameter = message.getContent().getInt("index");
+            //this.patch.getEffects().get(---).getParameters().get(indexParameter).setValue(---);
         }
     }
 
