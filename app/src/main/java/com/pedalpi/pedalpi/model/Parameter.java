@@ -30,7 +30,7 @@ public class Parameter implements Serializable {
         this.maximum = prepareMaximum(data);
         this.valueDefault = prepareValueDefault(data);
 
-        Double value = prepareDoubleValue(data, "value");
+        Double value = Parameter.prepareDoubleValue(data, "value");
         this.value = value != null ? value : this.valueDefault;
 
         //this.units = prepareUnits(data);
@@ -39,7 +39,7 @@ public class Parameter implements Serializable {
         this.properties = prepareProperties(data);
     }
 
-    private Double prepareDoubleValue(JSONObject data, String key) {
+    public static Double prepareDoubleValue(JSONObject data, String key) {
         try {
             Object value = data.get(key);
             if (value instanceof Integer)
@@ -138,3 +138,6 @@ public class Parameter implements Serializable {
         return index;
     }
 }
+/*
+* effect :
+* */

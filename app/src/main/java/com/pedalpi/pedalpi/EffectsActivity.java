@@ -64,11 +64,8 @@ public class EffectsActivity extends AppCompatActivity implements Server.OnMessa
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    toggleStatusEffect(effect, button);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                toggleStatusEffect(effect, button);
+                updateEffectStatusToServer(effect);
             }
         });
         button.setOnLongClickListener(new View.OnLongClickListener() {
@@ -82,25 +79,27 @@ public class EffectsActivity extends AppCompatActivity implements Server.OnMessa
         return button;
     }
 
-    private void toggleStatusEffect(final Effect effect, final Button button) throws JSONException {
+    private void toggleStatusEffect(final Effect effect, final Button button) {
         Log.i("BOTAO", "Effect selected: " + effect);
         effect.toggleStatus();
         runOnUiThread(new Runnable() {
-                          @Override
-                          public void run() {
-                              button.setBackgroundColor(effect.isActive() ? Color.rgb(60,179,113) : Color.rgb(178,34,34));
-                              Toast.makeText(getApplicationContext(), "efeito " + effect , Toast.LENGTH_SHORT).show();
-                          }
-                      });
-        updateEffectStatusToServer(effect);
+              @Override
+              public void run() {
+              button.setBackgroundColor(effect.isActive() ? Color.rgb(60,179,113) : Color.rgb(178,34,34));
+              Toast.makeText(getApplicationContext(), "efeito " + effect , Toast.LENGTH_SHORT).show();
+              }
+        });
     }
 
+    private void updateEffectStatusToServer(Effect effect) {
+        try {
+            JSONObject indexNumber = new JSONObject();
+            indexNumber.put("index",effect.getIndex());
 
-    private void updateEffectStatusToServer(Effect effect) throws JSONException {
-        JSONObject indexNumber = new JSONObject();
-        indexNumber.put("index",effect.getIndex());
-
-        Server.getInstance().send(new Message(ProtocolType.EFFECT, indexNumber));
+            Server.getInstance().send(new Message(ProtocolType.EFFECT, indexNumber));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void openScreenParamsList(Effect effect) {

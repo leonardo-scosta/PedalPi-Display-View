@@ -1,7 +1,6 @@
 package com.pedalpi.pedalpi;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.view.ContextThemeWrapper;
@@ -10,7 +9,6 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
-import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,12 +17,19 @@ import android.widget.ToggleButton;
 import com.pedalpi.pedalpi.communication.Message;
 import com.pedalpi.pedalpi.communication.ProtocolType;
 import com.pedalpi.pedalpi.communication.Server;
+import com.pedalpi.pedalpi.component.ParamSeekbar;
 import com.pedalpi.pedalpi.model.Effect;
 import com.pedalpi.pedalpi.model.Parameter;
 import com.pedalpi.pedalpi.model.Patch;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 
-public class ParamsActivity extends AppCompatActivity implements Server.OnMessageListener{
+import java.util.LinkedList;
+import java.util.List;
+
+
+public class ParamsActivity extends AppCompatActivity implements Server.OnMessageListener, ParamSeekbar.ParamValueChangeListener {
 
     private Patch patch;
     private Effect effect;
@@ -32,7 +37,8 @@ public class ParamsActivity extends AppCompatActivity implements Server.OnMessag
     public static final String PARAMETER = "PARAMETER";
 
     Spinner parametro1;
-    ToggleButton toggleButton1;
+    ToggleButton toggleButton;
+    private List<Object> views;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,9 +53,10 @@ public class ParamsActivity extends AppCompatActivity implements Server.OnMessag
 
         LinearLayout container = (LinearLayout) findViewById(R.id.paramsContainer);
 
-        for (Parameter parameter : this.effect.getParameters())
-            gerenateParameter(container, parameter);
+        this.views = new LinkedList<>();
 
+        for (Parameter parameter : this.effect.getParameters())
+            views.add(generateParameter(container, parameter));
 
         Server.getInstance().setListener(this);
     }
@@ -59,7 +66,7 @@ public class ParamsActivity extends AppCompatActivity implements Server.OnMessag
         name.setText(index + " - " + effect.getName());
     }
 
-    private void gerenateParameter(LinearLayout container, Parameter parameter) {
+    private Object generateParameter(LinearLayout container, Parameter parameter) {
         LinearLayout linearLayout = new LinearLayout(new ContextThemeWrapper(container.getContext(), LinearLayout.HORIZONTAL));
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM);
@@ -68,30 +75,32 @@ public class ParamsActivity extends AppCompatActivity implements Server.OnMessag
         linearLayout.setLayoutParams(params);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
 
+        Object element;
         if (parameter.isCombobox())
-            createSpinner(linearLayout, parameter);
+            element = createSpinner(linearLayout, parameter);
         else if (parameter.isToggle())
-            createButton(linearLayout, parameter); //createToggle();
+            element = createButton(linearLayout, parameter); //createToggle();
         else
-            createSeekbar(linearLayout, parameter);
+            element = createSeekbar(linearLayout, parameter);
 
         container.addView(linearLayout);
+        return element;
     }
 
     private View createButton(LinearLayout container, Parameter parameter) {
-        toggleButton1 =(ToggleButton) findViewById(R.id.toggleButton);
+        toggleButton =(ToggleButton) findViewById(R.id.toggleButton);
 
-        toggleButton1.setOnClickListener(new View.OnClickListener() {
+        toggleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            if (toggleButton1.isChecked()) {
-                String ligado = toggleButton1.getText().toString();
+            if (toggleButton.isChecked()) {
+                String ligado = toggleButton.getText().toString();
                 Toast.makeText(getApplicationContext(), ligado + " ligado", Toast.LENGTH_SHORT).show();
             }
             }
         });
 
-        return toggleButton1;
+        return toggleButton;
     }
 
     private View createSpinner(LinearLayout container, Parameter parameter) {
@@ -102,83 +111,11 @@ public class ParamsActivity extends AppCompatActivity implements Server.OnMessag
         return parametro1;
     }
 
-    public View createSeekbar(LinearLayout container, final Parameter parameter) {
-        final TextView viewName = new TextView(getApplicationContext());
-        viewName.setText(parameter.getName());
-        viewName.setBackgroundColor(Color.rgb(138,43,226));
-        viewName.setTextAppearance(getApplicationContext(), R.style.ParametersName);
-        viewName.setGravity(Gravity.CENTER);
+    public ParamSeekbar createSeekbar(LinearLayout container, Parameter parameter) {
+        ParamSeekbar seekbar = new ParamSeekbar(container, parameter);
+        seekbar.setListener(this);
 
-        final TextView viewValueCenter = new TextView(getApplicationContext());
-        viewValueCenter.setBackgroundColor(Color.rgb(138,43,226));
-        viewValueCenter.setTextAppearance(getApplicationContext(), R.style.ParametersPercent);
-        viewValueCenter.setGravity(Gravity.CENTER);
-
-        final float valueMin = (float) parameter.getMinimum();
-        final float valueMax = (float) parameter.getMaximum();
-        final float value = (float) parameter.getValue();
-
-        SeekBar seekBar = new SeekBar(getApplicationContext());
-        seekBar.setBackgroundColor(Color.rgb(138,43,226));
-        seekBar.setProgress(calculePercentByRange(value, valueMin, valueMax));
-
-        int percentDefault = calculePercentByRange(value, valueMin, valueMax);
-        viewValueCenter.setText(percentDefault+"%");
-
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
-            double currentValue;
-            int percent;
-
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                currentValue = calculeSeekbarToPercent(progress, valueMax, valueMin);
-                updateValues();
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                updateValues();
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                updateValues();
-            }
-
-            private void updateValues() {
-                percent = calculePercentByRange(currentValue, valueMin, valueMax);
-                viewValueCenter.setText(percent+"%");
-
-                parameter.setValue(currentValue);
-                updateToServer(parameter);
-            }
-        });
-
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-
-        container.addView(viewName, layoutParams);
-        container.addView(viewValueCenter, layoutParams);
-        container.addView(seekBar, layoutParams);
-
-        return seekBar;
-    }
-
-    private void updateToServer(Parameter parameter) {
-
-        Log.i("effect", "" + effect.getIndex());
-        Log.i("param", "" + parameter.getIndex());
-        Log.i("parametro", parameter.getName() + " " + String.valueOf(parameter.getValue()));
-    }
-
-    public double calculeSeekbarToPercent(int progress, float valueMax, float valueMin){
-        return (progress*valueMax + (100-progress) * valueMin)/100.0;
-    }
-
-    public int calculePercentByRange(double currentValue, double valueMin, double valueMax){
-        return (int) (((currentValue - valueMin)*100/(valueMax-valueMin)));
+        return seekbar;
     }
 
     @Override
@@ -201,16 +138,58 @@ public class ParamsActivity extends AppCompatActivity implements Server.OnMessag
     }
 
     @Override
-    public void onMessage(Message message) {
+    public void onMessage(Message message) throws JSONException {
         Log.i("MESSAGE", message.getType().toString());
         if (message.getType() == ProtocolType.PATCH) {
             this.patch = new Patch(message.getContent());
             messageReceived = true;
             onBackPressed();
-        }else if(message.getType() == ProtocolType.EFFECT){
 
-        }else if(message.getType() == ProtocolType.PARAM){
+        } else if(message.getType() == ProtocolType.EFFECT) {
+            int indexEffect = message.getContent().getInt("index");
+            this.patch.getEffects().get(indexEffect).toggleStatus();
 
+        } else if(message.getType() == ProtocolType.PARAM) {
+            JSONObject data = message.getContent();
+
+            int effectIndex = data.getInt("effect");
+            int paramIndex = data.getInt("param");
+            Double value = Parameter.prepareDoubleValue(data, "value");
+
+            this.patch.getEffects().get(effectIndex).getParameters().get(paramIndex).setValue(value);
+            Parameter parameter = this.patch.getEffects().get(effectIndex).getParameters().get(paramIndex);
+
+            updateParamValue(parameter, this.views.get(parameter.getIndex()));
+        }
+    }
+
+    private void updateParamValue(Parameter parameter, Object object) {
+        /*if (parameter.isCombobox())
+            updatesValue
+        else if (parameter.isToggle())
+            parameter.setValue();
+        else {*/
+        ParamSeekbar seekbar = (ParamSeekbar) object;
+        seekbar.refreshView();
+        //}
+    }
+
+    @Override
+    public void onChange(Parameter parameter) {
+        updateToServer(parameter);
+    }
+
+    private void updateToServer(Parameter parameter) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put("effect", effect.getIndex());
+            data.put("param", parameter.getIndex());
+            data.put("value", parameter.getValue());
+
+            Server.getInstance().send(new Message(ProtocolType.PARAM, data));
+
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 }
