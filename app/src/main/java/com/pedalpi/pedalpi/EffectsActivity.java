@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.pedalpi.pedalpi.communication.Message;
+import com.pedalpi.pedalpi.communication.MessageProcessor;
 import com.pedalpi.pedalpi.communication.ProtocolType;
 import com.pedalpi.pedalpi.communication.Server;
 import com.pedalpi.pedalpi.model.Effect;
@@ -28,7 +29,6 @@ public class EffectsActivity extends AppCompatActivity implements Server.OnMessa
     private Patch patch;
     private List<Button> buttons;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,16 +42,26 @@ public class EffectsActivity extends AppCompatActivity implements Server.OnMessa
         Server.getInstance().setListener(this);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        LinearLayout container = (LinearLayout) findViewById(R.id.container);
+        container.removeAllViews();
+
+        this.buttons = createEffectsButtons(patch, container);
+    }
+
     private List<Button> createEffectsButtons(Patch patch, LinearLayout container) {
-         List<Button> buttons = new ArrayList<Button>();
+        List<Button> buttons = new ArrayList<Button>();
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             160 * 2//LinearLayout.LayoutParams.WRAP_CONTENT
         );
 
-        for (final Effect effect : patch.getEffects()) {
+        for (final Effect effect : patch.getEffects())
             buttons.add(createEffectButton(effect, container, layoutParams));
-        }
+
         return buttons;
     }
 
@@ -68,6 +78,7 @@ public class EffectsActivity extends AppCompatActivity implements Server.OnMessa
                 updateEffectStatusToServer(effect);
             }
         });
+
         button.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -75,6 +86,7 @@ public class EffectsActivity extends AppCompatActivity implements Server.OnMessa
                 return true;
             }
         });
+
         container.addView(button, layoutParams);
         return button;
     }
@@ -91,15 +103,10 @@ public class EffectsActivity extends AppCompatActivity implements Server.OnMessa
         });
     }
 
-    private void updateEffectStatusToServer(Effect effect) {
-        try {
-            JSONObject indexNumber = new JSONObject();
-            indexNumber.put("index",effect.getIndex());
 
-            Server.getInstance().send(new Message(ProtocolType.EFFECT, indexNumber));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+    private void updateEffectStatusToServer(Effect effect) {
+        Message message = MessageProcessor.generateEffectStatusToggled(effect);
+        Server.getInstance().send(message);
     }
 
     private void openScreenParamsList(Effect effect) {
@@ -121,7 +128,7 @@ public class EffectsActivity extends AppCompatActivity implements Server.OnMessa
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Server.getInstance().setListener(this);
-
+        Log.i("MESSAGE", String.valueOf(this.patch.getEffects()));
         this.patch = (Patch) data.getExtras().getSerializable(PatchActivity.PATCH);
         boolean settedCurrentPatch = data.getBooleanExtra(PatchActivity.SETTED_CURRENT_PATCH, false);
 
@@ -135,16 +142,22 @@ public class EffectsActivity extends AppCompatActivity implements Server.OnMessa
     @Override
     public void onMessage(Message message) throws JSONException {
         Log.i("MESSAGE", message.getType().toString());
-        if (message.getType() == ProtocolType.PATCH) {
-            this.patch = new Patch(message.getContent());
-            onBackPressed();
-        }else if(message.getType() == ProtocolType.EFFECT){
-            Log.i("effect", "" + message.getContent().getInt("index"));
-            int indexEffect = message.getContent().getInt("index");
-            toggleStatusEffect(this.patch.getEffects().get(indexEffect),buttons.get(indexEffect));
-        }else if(message.getType() == ProtocolType.PARAM){
+        this.patch = MessageProcessor.process(message,this.patch);
 
+        if (message.getType() == ProtocolType.EFFECT) {
+            int indexEffect = message.getContent().getInt("index");
+            toggleStatusEffectView(this.patch.getEffects().get(indexEffect),buttons.get(indexEffect));
         }
+    }
+
+    private void toggleStatusEffectView(final Effect effect, final Button button) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                button.setBackgroundColor(effect.isActive() ? Color.rgb(60,179,113) : Color.rgb(178,34,34));
+                Toast.makeText(getApplicationContext(), "efeito " + effect , Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
 

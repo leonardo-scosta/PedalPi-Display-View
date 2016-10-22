@@ -19,12 +19,9 @@ public class ParamSeekbar {
     }
 
     private final Parameter parameter;
-    private final LinearLayout container;
     private final SeekBar seekBar;
 
     private final TextView viewValueCenter;
-
-    private double currentValue;
 
     private ParamValueChangeListener listener = new ParamValueChangeListener() {
         @Override
@@ -35,8 +32,6 @@ public class ParamSeekbar {
 
     public ParamSeekbar(LinearLayout container, final Parameter parameter) {
         this.parameter = parameter;
-        this.container = container;
-
 
         Context context = container.getContext();
 
@@ -54,20 +49,19 @@ public class ParamSeekbar {
         this.seekBar = new SeekBar(context);
         seekBar.setBackgroundColor(Color.rgb(138,43,226));
 
-        int valueParameter = calculatePercent(getValue());
-        seekBar.setProgress(calculatePercent(valueParameter));
 
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+        int valueParameter = calculatePercent(getValue());
+        seekBar.setProgress(valueParameter);
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                currentValue = calculateParamValue(progress);
+                parameter.setValue(calculateParamValue(progress));
                 update();
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                update();
-            }
+            public void onStartTrackingTouch(SeekBar seekBar) {}
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
@@ -112,14 +106,11 @@ public class ParamSeekbar {
         return (int) ((currentValue - getMinimum()) * 100 / (getMaximum()-getMinimum()));
     }
 
-    public View getView() {
-        return this.seekBar;
-    }
-
     public void refreshView() {
-        int percent = calculatePercent(currentValue);
+        int percent = calculatePercent(parameter.getValue());
+
         this.viewValueCenter.setText(percent + "%");
-        parameter.setValue(currentValue);
+        seekBar.setProgress(percent);
     }
 
     public void setListener(ParamValueChangeListener listener) {

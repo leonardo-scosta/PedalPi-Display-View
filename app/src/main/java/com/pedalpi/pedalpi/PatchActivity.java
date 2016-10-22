@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.pedalpi.pedalpi.communication.Message;
+import com.pedalpi.pedalpi.communication.MessageProcessor;
 import com.pedalpi.pedalpi.communication.ProtocolType;
 import com.pedalpi.pedalpi.communication.Server;
 import com.pedalpi.pedalpi.model.Patch;
@@ -58,16 +59,10 @@ public class PatchActivity extends AppCompatActivity implements Server.OnMessage
     @Override
     public void onMessage(Message message) throws JSONException {
         Log.i("MESSAGE", message.getType().toString());
-        if (message.getType() == ProtocolType.PATCH) {
-            this.patch = new Patch(message.getContent());
+
+        this.patch = MessageProcessor.process(message,this.patch);
+        if (message.getType() == ProtocolType.PATCH)
             updateScreen(patch);
-        }else if(message.getType() == ProtocolType.EFFECT){
-            int indexEffect = message.getContent().getInt("index");
-            this.patch.getEffects().get(indexEffect).toggleStatus();
-        }else if(message.getType() == ProtocolType.PARAM){
-            int indexParameter = message.getContent().getInt("index");
-            //this.patch.getEffects().get(---).getParameters().get(indexParameter).setValue(---);
-        }
     }
 
     private void updateScreen(final Patch patch) {

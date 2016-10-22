@@ -15,6 +15,7 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.pedalpi.pedalpi.communication.Message;
+import com.pedalpi.pedalpi.communication.MessageProcessor;
 import com.pedalpi.pedalpi.communication.ProtocolType;
 import com.pedalpi.pedalpi.communication.Server;
 import com.pedalpi.pedalpi.component.ParamSeekbar;
@@ -119,17 +120,10 @@ public class ParamsActivity extends AppCompatActivity implements Server.OnMessag
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        this.patch = (Patch) data.getExtras().getSerializable(PatchActivity.PATCH);
-        super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    @Override
     public void onBackPressed() {
         Intent intent = new Intent();
         intent.putExtra(PatchActivity.PATCH, this.patch);
         intent.putExtra(PatchActivity.SETTED_CURRENT_PATCH, this.messageReceived);
-        //updateToServer(this.parameter);
 
         messageReceived = false;
 
@@ -140,38 +134,35 @@ public class ParamsActivity extends AppCompatActivity implements Server.OnMessag
     @Override
     public void onMessage(Message message) throws JSONException {
         Log.i("MESSAGE", message.getType().toString());
-        if (message.getType() == ProtocolType.PATCH) {
-            this.patch = new Patch(message.getContent());
-            messageReceived = true;
-            onBackPressed();
+        this.patch = MessageProcessor.process(message,this.patch);
 
-        } else if(message.getType() == ProtocolType.EFFECT) {
-            int indexEffect = message.getContent().getInt("index");
-            this.patch.getEffects().get(indexEffect).toggleStatus();
-
-        } else if(message.getType() == ProtocolType.PARAM) {
+        if (message.getType() == ProtocolType.PARAM){
             JSONObject data = message.getContent();
-
-            int effectIndex = data.getInt("effect");
+            int effectIndex = message.getContent().getInt("effect");
             int paramIndex = data.getInt("param");
-            Double value = Parameter.prepareDoubleValue(data, "value");
 
-            this.patch.getEffects().get(effectIndex).getParameters().get(paramIndex).setValue(value);
             Parameter parameter = this.patch.getEffects().get(effectIndex).getParameters().get(paramIndex);
-
-            updateParamValue(parameter, this.views.get(parameter.getIndex()));
+            updateParamView(parameter, this.views.get(parameter.getIndex()));
         }
+
     }
 
-    private void updateParamValue(Parameter parameter, Object object) {
-        /*if (parameter.isCombobox())
-            updatesValue
-        else if (parameter.isToggle())
-            parameter.setValue();
-        else {*/
-        ParamSeekbar seekbar = (ParamSeekbar) object;
-        seekbar.refreshView();
-        //}
+    private void updateParamView(Parameter parameter, final Object object) {
+        Log.i("adas", parameter.toString());
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                /*if (parameter.isCombobox())
+                    updatesValue
+                else if (parameter.isToggle())
+                    parameter.setValue();
+                else {*/
+                ParamSeekbar seekbar = (ParamSeekbar) object;
+                seekbar.refreshView();
+                //}
+            }
+        });
+
     }
 
     @Override
@@ -180,16 +171,7 @@ public class ParamsActivity extends AppCompatActivity implements Server.OnMessag
     }
 
     private void updateToServer(Parameter parameter) {
-        try {
-            JSONObject data = new JSONObject();
-            data.put("effect", effect.getIndex());
-            data.put("param", parameter.getIndex());
-            data.put("value", parameter.getValue());
-
-            Server.getInstance().send(new Message(ProtocolType.PARAM, data));
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        Message message = MessageProcessor.generateUpdateParamValue(this.effect,parameter);
+        Server.getInstance().send(message);
     }
 }
