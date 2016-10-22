@@ -1,6 +1,11 @@
 package com.pedalpi.pedalpi;
 
+import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.view.ContextThemeWrapper;
@@ -35,10 +40,8 @@ public class ParamsActivity extends AppCompatActivity implements Server.OnMessag
     private Patch patch;
     private Effect effect;
     private boolean messageReceived = false;
-    public static final String PARAMETER = "PARAMETER";
 
     Spinner parametro1;
-    ToggleButton toggleButton;
     private List<Object> views;
 
     @Override
@@ -76,35 +79,63 @@ public class ParamsActivity extends AppCompatActivity implements Server.OnMessag
         linearLayout.setLayoutParams(params);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
 
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
         Object element;
-        if (parameter.isCombobox())
-            element = createSpinner(linearLayout, parameter);
-        else if (parameter.isToggle())
-            element = createButton(linearLayout, parameter); //createToggle();
-        else
-            element = createSeekbar(linearLayout, parameter);
 
+        Log.i("CMBOBOX", String.valueOf(parameter.isCombobox()));
+        Log.i("TOGGLE", String.valueOf(parameter.isToggle()));
+        Log.i("KNOB", String.valueOf(parameter.isKnob()));
+
+        if (parameter.isCombobox()) {
+
+            element = createSpinner(linearLayout, parameter, layoutParams);
+        }else if (parameter.isToggle()) {
+
+            element = createButton(linearLayout, parameter, layoutParams); //createToggle();
+        }else {
+
+            element = createSeekbar(linearLayout, parameter, layoutParams);
+        }
         container.addView(linearLayout);
         return element;
     }
 
-    private View createButton(LinearLayout container, Parameter parameter) {
-        toggleButton =(ToggleButton) findViewById(R.id.toggleButton);
+    private View createButton(LinearLayout container, final Parameter parameter, LinearLayout.LayoutParams layoutParams) {
+        Context context = container.getContext();
+
+        final ToggleButton toggleButton = new ToggleButton(context);
+        toggleButton.setText(parameter.getName());
+        toggleButton.setGravity(Gravity.CENTER);
+        toggleButton.setTextAppearance(context, R.style.ButtonParamToggle);
+
+        boolean isChecked = parameter.getValue() == 1;
+        toggleButton.setBackgroundColor(isChecked ? Color.GREEN: Color.RED);
 
         toggleButton.setOnClickListener(new View.OnClickListener() {
+            @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
             @Override
             public void onClick(View v) {
-            if (toggleButton.isChecked()) {
-                String ligado = toggleButton.getText().toString();
-                Toast.makeText(getApplicationContext(), ligado + " ligado", Toast.LENGTH_SHORT).show();
-            }
+                boolean isChecked = parameter.getValue() == 1;
+                boolean newChecked = !isChecked;
+                int newValue = newChecked ? 1 : 0;
+
+                parameter.setValue(newValue);
+
+                toggleButton.setText(parameter.getName());
+                toggleButton.setBackgroundColor(newChecked ? Color.GREEN: Color.RED);
+
+                updateToServer(parameter);
             }
         });
 
+        container.addView(toggleButton, layoutParams);
         return toggleButton;
     }
 
-    private View createSpinner(LinearLayout container, Parameter parameter) {
+    private View createSpinner(LinearLayout container, Parameter parameter, LinearLayout.LayoutParams layoutParams) {
         parametro1 = (Spinner) findViewById(R.id.spinner);
         ArrayAdapter adapter = ArrayAdapter.createFromResource(this,R.array.Parâmetro_1,android.R.layout.simple_spinner_dropdown_item);
         parametro1.setAdapter(adapter);
@@ -112,8 +143,8 @@ public class ParamsActivity extends AppCompatActivity implements Server.OnMessag
         return parametro1;
     }
 
-    public ParamSeekbar createSeekbar(LinearLayout container, Parameter parameter) {
-        ParamSeekbar seekbar = new ParamSeekbar(container, parameter);
+    public ParamSeekbar createSeekbar(LinearLayout container, Parameter parameter, LinearLayout.LayoutParams layoutParams) {
+        ParamSeekbar seekbar = new ParamSeekbar(container, parameter, layoutParams);
         seekbar.setListener(this);
 
         return seekbar;

@@ -109,7 +109,7 @@ public class Parameter implements Serializable {
     }
 
     public boolean isToggle() {
-        return properties.contains("toggled");
+        return properties.contains("toggle");
     }
 
     public String getName() {

@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -13,6 +14,7 @@ import com.pedalpi.pedalpi.model.Parameter;
 
 
 public class ParamSeekbar {
+
 
     public interface ParamValueChangeListener {
         void onChange(Parameter parameter);
@@ -30,7 +32,7 @@ public class ParamSeekbar {
         }
     };
 
-    public ParamSeekbar(LinearLayout container, final Parameter parameter) {
+    public ParamSeekbar(LinearLayout container, final Parameter parameter, LinearLayout.LayoutParams layoutParams) {
         this.parameter = parameter;
 
         Context context = container.getContext();
@@ -73,11 +75,6 @@ public class ParamSeekbar {
                 listener.onChange(parameter);
             }
         });
-
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        );
 
         container.addView(viewName, layoutParams);
         container.addView(viewValueCenter, layoutParams);

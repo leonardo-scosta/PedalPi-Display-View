@@ -45,4 +45,12 @@
         <item name="android:textSize">@dimen/abc_action_bar_default_height_material</item>
     </style>
 
+    <style name="ButtonParamToggle" parent="@android:style/TextAppearance.Medium">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">165dp</item>
+        <item name="android:layout_alignParentLeft">true</item>
+        <item name="android:textSize">@dimen/abc_action_bar_default_height_material</item>
+    </style>
+
+
 </resources>
