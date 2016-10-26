@@ -85,9 +85,9 @@ public class ParamsActivity extends AppCompatActivity implements Server.OnMessag
         );
         Object element;
 
-        Log.i("CMBOBOX", String.valueOf(parameter.isCombobox()));
-        Log.i("TOGGLE", String.valueOf(parameter.isToggle()));
-        Log.i("KNOB", String.valueOf(parameter.isKnob()));
+        //Log.i("CMBOBOX", String.valueOf(parameter.isCombobox()));
+        //Log.i("TOGGLE", String.valueOf(parameter.isToggle()));
+        //Log.i("KNOB", String.valueOf(parameter.isKnob()));
 
         if (parameter.isCombobox()) {
 
@@ -112,7 +112,7 @@ public class ParamsActivity extends AppCompatActivity implements Server.OnMessag
         toggleButton.setTextAppearance(context, R.style.ButtonParamToggle);
 
         boolean isChecked = parameter.getValue() == 1;
-        toggleButton.setBackgroundColor(isChecked ? Color.GREEN: Color.RED);
+        toggleButton.setBackgroundColor(isChecked ? Color.rgb(60,179,113): Color.rgb(178,34,34));
 
         toggleButton.setOnClickListener(new View.OnClickListener() {
             @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -125,7 +125,7 @@ public class ParamsActivity extends AppCompatActivity implements Server.OnMessag
                 parameter.setValue(newValue);
 
                 toggleButton.setText(parameter.getName());
-                toggleButton.setBackgroundColor(newChecked ? Color.GREEN: Color.RED);
+                toggleButton.setBackgroundColor(newChecked ? Color.rgb(60,179,113): Color.rgb(178,34,34));
 
                 updateToServer(parameter);
             }
@@ -136,6 +136,9 @@ public class ParamsActivity extends AppCompatActivity implements Server.OnMessag
     }
 
     private View createSpinner(LinearLayout container, Parameter parameter, LinearLayout.LayoutParams layoutParams) {
+        Context context = container.getContext();
+
+
         parametro1 = (Spinner) findViewById(R.id.spinner);
         ArrayAdapter adapter = ArrayAdapter.createFromResource(this,R.array.Parâmetro_1,android.R.layout.simple_spinner_dropdown_item);
         parametro1.setAdapter(adapter);
@@ -174,6 +177,9 @@ public class ParamsActivity extends AppCompatActivity implements Server.OnMessag
 
             Parameter parameter = this.patch.getEffects().get(effectIndex).getParameters().get(paramIndex);
             updateParamView(parameter, this.views.get(parameter.getIndex()));
+        }else if(message.getType() == ProtocolType.PATCH){
+            messageReceived = true;
+            onBackPressed();
         }
 
     }

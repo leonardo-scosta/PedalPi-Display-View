@@ -2,6 +2,7 @@ package com.pedalpi.pedalpi.component;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -60,6 +61,7 @@ public class ParamSeekbar {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 parameter.setValue(calculateParamValue(progress));
                 update();
+                Log.i("PROGRESS", "");
             }
 
             @Override
@@ -68,6 +70,7 @@ public class ParamSeekbar {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 update();
+                Log.i("STOPP", "");
             }
 
             private void update() {

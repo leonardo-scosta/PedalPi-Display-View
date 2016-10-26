@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -54,13 +55,15 @@ public class EffectsActivity extends AppCompatActivity implements Server.OnMessa
 
     private List<Button> createEffectsButtons(Patch patch, LinearLayout container) {
         List<Button> buttons = new ArrayList<Button>();
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+        /*LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             160 * 2//LinearLayout.LayoutParams.WRAP_CONTENT
-        );
+        );*/
+        LinearLayout.LayoutParams effects = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM);
+        effects.setMargins(0, 20, 0, 0);
 
         for (final Effect effect : patch.getEffects())
-            buttons.add(createEffectButton(effect, container, layoutParams));
+            buttons.add(createEffectButton(effect, container, effects));
 
         return buttons;
     }
@@ -147,6 +150,8 @@ public class EffectsActivity extends AppCompatActivity implements Server.OnMessa
         if (message.getType() == ProtocolType.EFFECT) {
             int indexEffect = message.getContent().getInt("index");
             toggleStatusEffectView(this.patch.getEffects().get(indexEffect),buttons.get(indexEffect));
+        }else if(message.getType() == ProtocolType.PATCH){
+            onBackPressed();
         }
     }
 
