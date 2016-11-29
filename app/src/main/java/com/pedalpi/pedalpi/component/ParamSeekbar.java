@@ -57,11 +57,14 @@ public class ParamSeekbar {
         seekBar.setProgress(valueParameter);
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                parameter.setValue(calculateParamValue(progress));
-                update();
-                Log.i("PROGRESS", "");
+                if (fromUser) {
+                    parameter.setValue(calculateParamValue(progress));
+                    update();
+                    Log.i("PROGRESS", "");
+                }
             }
 
             @Override
@@ -69,8 +72,9 @@ public class ParamSeekbar {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                update();
-                Log.i("STOPP", "");
+                    update();
+                    Log.i("STOPP", "");
+
             }
 
             private void update() {
